@@ -1,0 +1,23 @@
+### enregistrer un utlisateur
+POST http://localhost:8080/medias/user
+Content-Type: application/x-www-form-urlencoded
+
+nom=Fatou&password=AdminRM
+
+### récupérer le profil d'un user
+GET http://localhost:8080/medias/user/b258a553-230e-4178-915a-7540659752e5
+Accept: application/json
+
+### récupérer tous les users
+GET http://localhost:8080/medias/user
+Accept: application/json
+
+### enregistrer une video
+POST http://localhost:8080/medias/user/b258a553-230e-4178-915a-7540659752e5/video
+Content-Type: application/json
+
+{
+  "url": "http::///localhost:9090/mpz",
+  "description":"le travail d'une eleve",
+  "titre": "monboulot"
+}

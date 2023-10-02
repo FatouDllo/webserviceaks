@@ -1,0 +1,18 @@
+# Utilisez une image Java officielle en tant que base
+FROM maven:3.8.7-eclipse-temurin-17
+
+# Définition de l'argument de build
+ARG SONAR_PROJECT_NAME
+ARG SONAR_TOKEN
+ARG SONAR_HOST
+
+# Définition de la variable d'environnement à partir de l'argument de build
+ENV SONAR_PROJECT_NAME $SONAR_PROJECT_NAME
+ENV SONAR_TOKEN $SONAR_TOKEN
+ENV SONAR_HOST $SONAR_HOST
+
+WORKDIR /app
+
+COPY ./ ./
+
+CMD mvn clean verify sonar:sonar -Dsonar.projectKey=$SONAR_PROJECT_NAME -Dsonar.host.url=$SONAR_HOST -Dsonar.login=$SONAR_TOKEN

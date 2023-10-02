@@ -1,0 +1,15 @@
+version: '3'
+services:
+  my-java-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080" # Remplacez 8080 par le port de votre application Java
+  sonarqube:
+    image: sonarqube:latest
+    ports:
+      - "9000:9000" # Port pour l'interface web SonarQube
+      - "9092:9092" # Port pour la base de données H2
+
+#mvn sonar:sonar -Dsonar.projectKey=essaiWeb2 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sqp_4876b527049aabef66e3bbce7bae4416db8aeeaf  mvn sonar:sonar -Dsonar.projectKey=essaiWeb2 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sqp_4876b527049aabef66e3bbce7bae4416db8aeeaf

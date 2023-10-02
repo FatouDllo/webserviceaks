@@ -1,0 +1,211 @@
+= TP2. Créer un Web-service
+:toc:
+
+
+== Objectifs
+
+* Concevoir un service REST.
+* Implémenter un service REST avec SpringBoot.
+* Tester _manuellement_ un service REST.
+* Gérer l'inscription d'utilisateurs, et l'accès restreint à certains _endpoints_ d'un service REST.
+
+
+== Mise en place du service REST
+
+
+=== Création du projet
+
+Sous IntellIJ, faites :
+
+. `File` -> `New Project`
+. Choisissez `Spring Intialzr`
+. Renseignez les champs avec les informations suivantes :
+.. Name : `monPremierWebService`
+.. Type : `Maven`
+.. Group : `fr.orleans.m1.wsi`
+.. Artifact : `mon-premier-webservice`
+.. JDK : Choisissez une version du JDK supérieure ou égale à `17`
+.. Java : Choisissez une version supérieure ou égale à `17`
+.. Packaging : `Jar`
+. Dans la section Web, cochez uniquement `Spring Web`.
+. Validez la création en cliquant sur `Finish`.
+
+
+=== Création du modèle
+
+. Créez un package `modele` dans le package généré (au même niveau que la classe principale).
+. Créez les classes ci-dessous dans ce package :
++
+[source, java]
+----
+@Component
+public class FacadePromotion {
+
+    Map<String,Etudiant> etudiants;
+
+    public FacadePromotion() {
+        this.etudiants = new HashMap<>();
+    }
+
+    public String enregistrerEtudiant(String nom, String prenom, String adresse) {
+        Etudiant etudiant = new Etudiant(nom,prenom,adresse);
+        this.etudiants.put(etudiant.getNumeroEtudiant(),etudiant);
+        return etudiant.getNumeroEtudiant();
+    }
+
+    public Collection<Etudiant> getEtudiants() {
+        return this.etudiants.values();
+    }
+
+    public Etudiant getEtudiantById(String numeroEtudiant) throws EtudiantInexistantException {
+        if (this.etudiants.containsKey(numeroEtudiant)) {
+            return this.etudiants.get(numeroEtudiant);
+        }
+        throw new EtudiantInexistantException();
+    }
+}
+----
++
+[source, java]
+----
+public class Etudiant {
+
+    private String numeroEtudiant;
+    private String nomEtudiant;
+    private String prenomEtudiant;
+    private String adresse;
+
+    public Etudiant(String nomEtudiant, String prenomEtudiant, String adresse) {
+        this.numeroEtudiant = UUID.randomUUID().toString();
+        this.nomEtudiant = nomEtudiant;
+        this.prenomEtudiant = prenomEtudiant;
+        this.adresse = adresse;
+    }
+
+    public String getNumeroEtudiant() {
+        return numeroEtudiant;
+    }
+
+    public void setNumeroEtudiant(String numeroEtudiant) {
+        this.numeroEtudiant = numeroEtudiant;
+    }
+
+    public String getNomEtudiant() {
+        return nomEtudiant;
+    }
+
+    public void setNomEtudiant(String nomEtudiant) {
+        this.nomEtudiant = nomEtudiant;
+    }
+
+    public String getPrenomEtudiant() {
+        return prenomEtudiant;
+    }
+
+    public void setPrenomEtudiant(String prenomEtudiant) {
+        this.prenomEtudiant = prenomEtudiant;
+    }
+
+    public String getAdresse() {
+        return adresse;
+    }
+
+    public void setAdresse(String adresse) {
+        this.adresse = adresse;
+    }
+}
+
+----
++
+[source, java]
+----
+public class EtudiantInexistantException extends Exception {
+    // NOP
+}
+----
+
+[start=3]
+
+. A votre avis, à quoi sert l'annotation `@Component` ?
+. Rep : l'annotation `@Component` sert instancier la classe dans le controlleur elle permet de gérer toute suele les instances de l'annotation dans le controlleur au moment on fera l'appel à cette classe, elle permet de déclarer auprès de Spring qu’une classe est un bean à exploiter.
+. Créez un package `controleur` au même niveau que la classe principale.
+. Créez une classe `Controleur` que vous annoterez avec `@RestController`.
+. Déclarez un champ de `FacadePromotion` annoté avec `@Autowired`. A quoi sert cette
+annotation ?
+. Rep : @Autowired permet d'activer l'injection automatique de dépendance
+. Développez les URIs nécessaires pour exécuter le script suivant :
++
+[source, http request]
+----
+### Inscription d'un nouvel étudiant
+POST http://localhost:8080/mpws/etudiant
+Content-Type: application/x-www-form-urlencoded
+
+nom=Boichut&prenom=Yohan&adresse=Somewhere in Orleans
+
+> {%
+client.global.set("locationEtudiant", response.headers.valueOf("Location"));
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 201, "L'étudiant aurait dû être créé");
+});
+%}
+
+### Récupération des informations de l'étudiant créé
+GET {{locationEtudiant}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "L'étudiant aurait dû être retrouvé !");
+});
+%}
+
+### Récupération d'un étudiant inexistant (404 attendu)
+GET http://localhost:8080/mpws/etudiant/aucunechance
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 404, "L'étudiant n'aurait pas dû être retrouvé");
+});
+%}
+
+### Récupération d'une collection de tous les étudiants
+GET http://localhost:8080/mpws/etudiant
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Les étudiants aurait dû être récupérés");
+});
+%}
+----
+
+
+== Un Web-service plus évolué
+
+
+Nous voulons gérer une plate-forme de vidéos.
+
+=== Fonctionnalités attendues
+
+* Un utilisateur doit s'inscrire (nom, mot de passe) pour pouvoir déposer des vidéos, créer des playlists, supprimer des playlists, ajouter une vidéo à une playlist, supprimer une vidéo d'une playlist.
+
+* Chaque utilisateur inscrit peut déposer des vidéos (url, description, titre) sur cette plate-forme à partir du moment où il est authentifié (nom et mot de passe vont être requis pour chaque requête).
+Ces vidéos deviennent disponibles pour tout le monde.
+
+* Seuls les utilisateurs inscrits peuvent composer et gérer des playlists.
+Une playlist peut contenir des vidéos de toute origine (pas nécessaire que l'utilisateur en soit le propriétaire).
+
+* Un utilisateur inscrit peut récupérer l'intégralité de son profil, et uniquement de son profil (son nom, ses playlists et toutes les vidéos qu'il a posté).
+
+* Un utilisateur inscrit peut récupérer l'intégralité de ses playlists (uniquement les siennes).
+
+* Un utilisateur inscrit peut récupérer l'intégralité de ses vidéos postées (uniquement les siennes).
+
+
+=== Travail à réaliser
+
+. Proposez des URIs pour votre Web-service qui permettront de couvrir les différentes fonctionnalités attendues.
+
+. Après validation de vos URIs, vous devez mettre en place le Web-service :
+.. Créez votre application Springboot, comme dans l'exercice 2 du TP1.
+.. Développez à l'intérieur un modèle (sans cryptographie) offrant toutes les intéractions requises : créer un compte, s'authentifier, ajouter une vidéo,...
+.. Créez votre contrôleur REST en injectant le modèle (comme vu dans l'exercice 2 du TP1).
