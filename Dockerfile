@@ -15,5 +15,7 @@ RUN ./mvnw clean install -DskipTests=true
 
 RUN ./mvnw clean package -DskipTests=true
 
+
+
 # Commande d'exécution de l'application
 CMD ["java", "-jar", "target/monSecondWebService-0.0.1-SNAPSHOT.jar"]
