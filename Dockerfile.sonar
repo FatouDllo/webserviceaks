@@ -1,3 +1,5 @@
+# il crée une image docker et demarre notre projet dessus n'est pas utilisé directement pour run le projet
+# juste sur sonarqube
 # Utilisez une image Java officielle en tant que base
 FROM maven:3.8.7-eclipse-temurin-17
 

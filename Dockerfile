@@ -9,7 +9,9 @@ COPY ./ /app/monSecondWebService/
 
 WORKDIR /app/monSecondWebService
 
-RUN /app/monSecondWebService/mvnw clean install -DskipTests=true
+RUN chmod +x ./mvnw
+
+RUN ./mvnw clean install -DskipTests=true
 
 RUN ./mvnw clean package -DskipTests=true
 
