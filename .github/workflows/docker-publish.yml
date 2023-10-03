@@ -37,4 +37,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/fatoudllo/webserviceaks:test
+          tags: ${{ steps.meta.outputs.tags }}
